@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+    odoo:
+        container_name: odoo
+        image: odoo:16.0
+        volumes:
+            - ./addons-extra:/mnt/extra-addons
+            - ./etc/odoo:/etc/odoo
+            - odoo-web-data:/var/lib/odoo
+        depends_on:
+            - postgres
+
+    postgres:
+        image: postgres:15
+        environment:
+            - POSTGRES_DB=postgres
+            - POSTGRES_PASSWORD=odoo
+            - POSTGRES_USER=odoo
+            - PGDATA=/var/lib/postgresql/data/pgdata
+        volumes:
+            - odoo-db-data:/var/lib/postgresql/data/pgdata
+
+    nginx:
+        container_name: nginx
+        image: nginx:latest
+        restart: unless-stopped
+        port:
+          - 80:80
+        volumes:
+            - ./nginx/conf:/etc/nginx/conf.d
+        depends_on:
+            - odoo
+
+volumes:
+    odoo-web-data:
+    odoo-db-data:
